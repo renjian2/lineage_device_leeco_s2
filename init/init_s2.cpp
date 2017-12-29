@@ -29,18 +29,21 @@
  */
 
 #include <cstdlib>
-
 #include <unistd.h>
 #include <fcntl.h>
-
+#include <android-base/logging.h>
 #include <android-base/properties.h>
 
-#include "vendor_init.h"
 #include "property_service.h"
 #include "vendor_init.h"
 
+#define _REALLY_INCLUDE_SYS__SYSTEM_PROPERTIES_H_
+#include <sys/_system_properties.h>
 
 #define DEVINFO_FILE "/dev/block/bootdevice/by-name/devinfo"
+
+namespace android {
+namespace init {
 
 static int read_file2(const char *fname, char *data, int max_size)
 {
@@ -179,3 +182,6 @@ void vendor_load_properties() {
 
     init_alarm_boot_properties();
 }
+
+}  // namespace init
+}  // namespace android
