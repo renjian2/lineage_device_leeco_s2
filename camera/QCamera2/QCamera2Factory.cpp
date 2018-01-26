@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2016, The Linux Foundataion. All rights reserved.
+/* Copyright (c) 2012-2015, The Linux Foundataion. All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are
@@ -76,7 +76,7 @@ QCamera2Factory::QCamera2Factory()
     int isHAL3Enabled = atoi(prop);
 
     // Signifies whether system has to enable dual camera mode
-    snprintf(propDefault, PROPERTY_VALUE_MAX, "%d", isDualCamAvailable(isHAL3Enabled));
+    sprintf(propDefault, "%d", isDualCamAvailable(isHAL3Enabled));
     property_get("persist.camera.dual.camera", prop, propDefault);
     bDualCamera = atoi(prop);
     CDBG_HIGH("%s[%d]: dualCamera:%d ", __func__, __LINE__, bDualCamera);
@@ -152,6 +152,7 @@ QCamera2Factory::~QCamera2Factory()
 int QCamera2Factory::get_number_of_cameras()
 {
     int numCameras = 0;
+    int rc = NO_ERROR;
 
     if (!gQCamera2Factory) {
         gQCamera2Factory = new QCamera2Factory();
@@ -450,7 +451,7 @@ int QCamera2Factory::camera_device_open(
 }
 
 struct hw_module_methods_t QCamera2Factory::mModuleMethods = {
-    .open = QCamera2Factory::camera_device_open,
+    open: QCamera2Factory::camera_device_open,
 };
 
 /*===========================================================================
@@ -517,7 +518,7 @@ int QCamera2Factory::openLegacy(
 #define SYSFS_FLASH_PATH_BRIGHTNESS "/sys/class/leds/led:torch_0/brightness"
 #define SYSFS_FLASH_PATH_ENABLE "/sys/class/leds/led:switch/brightness"
  
-int QCamera2Factory::setTorchMode(__attribute__((unused)) const char* camera_id, bool on)
+int QCamera2Factory::setTorchMode(const char* camera_id, bool on)
 {
     int retVal(0);
     int fd_brightness(-1);

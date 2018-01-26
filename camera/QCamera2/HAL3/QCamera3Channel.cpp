@@ -34,7 +34,6 @@
 #include <cstdlib>
 #include <stdio.h>
 #include <string.h>
-#include <sys/stat.h>
 #include <hardware/camera3.h>
 #include <system/camera_metadata.h>
 #include <gralloc_priv.h>
@@ -51,8 +50,6 @@ using namespace android;
 namespace qcamera {
 static const char ExifAsciiPrefix[] =
     { 0x41, 0x53, 0x43, 0x49, 0x49, 0x0, 0x0, 0x0 };          // "ASCII\0\0\0"
-
-__unused
 static const char ExifUndefinedPrefix[] =
     { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };   // "\0\0\0\0\0\0\0\0"
 
@@ -527,7 +524,7 @@ void QCamera3Channel::dumpYUV(mm_camera_buf_def_t *frame, cam_dimension_t dim,
                         }
                     }
                     CDBG_HIGH("%s: written number of bytes %ld\n",
-                             __func__, (long)written_len);
+                             __func__, written_len);
                     dumpFrmCnt++;
                     close(file_fd);
                 } else {
@@ -1267,7 +1264,7 @@ void QCamera3RawChannel::dumpRawSnapshot(mm_camera_buf_def_t *frame)
        int file_fd = open(buf, O_RDWR| O_CREAT, 0644);
        if (file_fd >= 0) {
           ssize_t written_len = write(file_fd, frame->buffer, frame->frame_len);
-          ALOGE("%s: written number of bytes %ld", __func__, written_len);
+          ALOGE("%s: written number of bytes %zd", __func__, written_len);
           close(file_fd);
        } else {
           ALOGE("%s: failed to open file to dump image", __func__);
@@ -1464,7 +1461,7 @@ void QCamera3RawDumpChannel::dumpRawSnapshot(mm_camera_buf_def_t *frame)
             if (file_fd >= 0) {
                 ssize_t written_len =
                         write(file_fd, frame->buffer, offset.frame_len);
-                CDBG("%s: written number of bytes %ld", __func__, written_len);
+                CDBG("%s: written number of bytes %zd", __func__, written_len);
                 close(file_fd);
             } else {
                 ALOGE("%s: failed to open file to dump image", __func__);
@@ -1491,7 +1488,7 @@ void QCamera3RawDumpChannel::dumpRawSnapshot(mm_camera_buf_def_t *frame)
  * RETURN          : NA
  *==========================================================================*/
 void QCamera3RawDumpChannel::streamCbRoutine(mm_camera_super_buf_t *super_frame,
-                                                __unused QCamera3Stream *stream)
+                                                QCamera3Stream *stream)
 {
     CDBG("%s: E",__func__);
     if (super_frame == NULL || super_frame->num_bufs != 1) {
@@ -2521,7 +2518,7 @@ int32_t getExifLatitude(rat_t *latitude,
 {
     char str[30];
     snprintf(str, sizeof(str), "%f", value);
-    if(str[0] != '\0') {
+    if(str != NULL) {
         parseGPSCoordinate(str, latitude);
 
         //set Latitude Ref
@@ -2556,7 +2553,7 @@ int32_t getExifLongitude(rat_t *longitude,
 {
     char str[30];
     snprintf(str, sizeof(str), "%f", value);
-    if(str[0] != '\0') {
+    if(str != NULL) {
         parseGPSCoordinate(str, longitude);
 
         //set Longitude Ref
@@ -2591,7 +2588,7 @@ int32_t getExifAltitude(rat_t *altitude, char *altRef, double argValue)
 {
     char str[30];
     snprintf(str, sizeof(str), "%f", argValue);
-    if (str[0] != '\0') {
+    if (str != NULL) {
         double value = atof(str);
         *altRef = 0;
         if(value < 0){
@@ -2624,7 +2621,7 @@ int32_t getExifGpsDateTimeStamp(char *gpsDateStamp,
 {
     char str[30];
     snprintf(str, sizeof(str), "%lld", (long long int)value);
-    if (str[0] != '\0') {
+    if(str != NULL) {
         time_t unixTime = (time_t)atol(str);
         struct tm *UTCTimestamp = gmtime(&unixTime);
         if (UTCTimestamp != NULL) {
@@ -2672,8 +2669,8 @@ QCamera3Exif *QCamera3PicChannel::getExifData(metadata_buffer_t *metadata,
     uint32_t count = 0;
 
     // add exif entries
-    String8 dateTime("");
-    String8 subsecTime("");
+    String8 dateTime;
+    String8 subsecTime;
     rc = getExifDateTime(dateTime, subsecTime);
     if (rc == NO_ERROR) {
         exif->addEntry(EXIFTAGID_DATE_TIME, EXIF_ASCII,
